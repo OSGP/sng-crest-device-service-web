@@ -1,5 +1,11 @@
+# Run the actuator under a different port
 management:
+  server:
+    port: 8081
   endpoints:
     web:
       exposure:
-        include: prometheus
+        include:
+          - "prometheus"
+          - "health"
+          - "info"
