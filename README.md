@@ -1,5 +1,5 @@
-# GXF Service template
-This is a template repository for GXF services.
+# SNG Crest device service web
+This service processes firmware files for the standard notifying gateway and posts the firmware via REST.
 
 ## Developer configuration
 To retrieve GXF dependencies you need to configure a local GitHub token.

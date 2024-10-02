@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+import com.diffplug.gradle.spotless.SpotlessExtension
 import io.spring.gradle.dependencymanagement.internal.dsl.StandardDependencyManagementExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.springframework.boot") version "3.3.4" apply false
@@ -11,9 +13,9 @@ plugins {
     kotlin("jvm") version "2.0.20" apply false
     kotlin("plugin.spring") version "2.0.20" apply false
     kotlin("plugin.jpa") version "2.0.20" apply false
-    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1" apply false
     id("org.sonarqube") version "5.1.0.4882"
     id("eclipse")
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 version = System.getenv("GITHUB_REF_NAME")?.replace("/", "-")?.lowercase() ?: "develop"
@@ -21,8 +23,9 @@ version = System.getenv("GITHUB_REF_NAME")?.replace("/", "-")?.lowercase() ?: "d
 sonar {
     properties {
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.projectKey", "OSGP_gxf-service-template")
+        property("sonar.projectKey", "OSGP_sng-crest-device-service-web")
         property("sonar.organization", "gxf")
+        property("sonar.gradle.skipCompile", true)
     }
 }
 
@@ -34,8 +37,9 @@ subprojects {
     apply(plugin = "eclipse")
     apply(plugin = "jacoco")
     apply(plugin = "jacoco-report-aggregation")
+    apply(plugin = "com.diffplug.spotless")
 
-    group = "org.gxf.template"
+    group = "org.gxf.deviceserviceweb"
     version = rootProject.version
 
     repositories {
@@ -47,6 +51,17 @@ subprojects {
                 username = project.findProperty("github.username") as String? ?: System.getenv("GITHUB_ACTOR")
                 password = project.findProperty("github.token") as String? ?: System.getenv("GITHUB_TOKEN")
             }
+        }
+    }
+
+    extensions.configure<SpotlessExtension> {
+        kotlin {
+            // by default the target is every '.kt' and '.kts' file in the java source sets
+            ktfmt().dropboxStyle()
+            licenseHeaderFile(
+                "${project.rootDir}/license-template.kt",
+                "package")
+                .updateYearWithLatest(false)
         }
     }
 
@@ -63,6 +78,19 @@ subprojects {
         compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
         }
+    }
+
+    tasks.register<Copy>("updateGitHooks") {
+        description = "Copies the pre-commit Git Hook to the .git/hooks folder."
+        group = "verification"
+        from("${project.rootDir}/scripts/pre-commit")
+        into("${project.rootDir}/.git/hooks")
+    }
+
+    tasks.withType<KotlinCompile> {
+        dependsOn(
+            tasks.named("updateGitHooks")
+        )
     }
 
     tasks.withType<Test> {
