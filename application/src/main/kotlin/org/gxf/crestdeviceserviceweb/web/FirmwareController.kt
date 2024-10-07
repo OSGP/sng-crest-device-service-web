@@ -41,7 +41,7 @@ class FirmwareController(val firmwareService: FirmwareService) {
             redirectAttributes.setMessage(
                 "Successfully processed $processedPackets firmware packets")
         } catch (e: Exception) {
-            redirectAttributes.setMessage("Failed to process file")
+            redirectAttributes.setMessage("Failed to process file: ${e.message}")
         }
         return redirectUrl
     }

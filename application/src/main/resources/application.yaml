@@ -1,7 +1,7 @@
 # Run the actuator under a different port
 management:
   server:
-    port: 8081
+    port: 8082
   endpoints:
     web:
       exposure:

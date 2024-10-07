@@ -33,7 +33,7 @@ class HttpClient(private val webClient: RestClient) {
             }
             return response
         } catch (e: Exception) {
-            logger.warn { "Error received while posting message with id ${firmware.name}" }
+            logger.warn(e) { "Error received while posting message with name ${firmware.name}" }
             throw e
         }
     }
